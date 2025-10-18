@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bot Builder - منصة إنشاء بوتات Discord 24/7">
+  <title>Bot Builder - T9 STORE</title>
+  <link rel="icon" type="image/png" href="../assets/t9-logo.png">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .bot-builder-container {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      gap: var(--spacing-xl);
+      height: calc(100vh - 100px);
+      padding: var(--spacing-lg);
+    }
+
+    .bot-sidebar {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+
+    .bot-editor {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .bot-preview {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+
+    .code-editor {
+      background-color: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: #00ff00;
+      min-height: 400px;
+      overflow: auto;
+      resize: none;
+    }
+
+    .code-editor:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+    }
+
+    .bot-templates {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .template-btn {
+      padding: var(--spacing-md);
+      background-color: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      text-align: right;
+    }
+
+    .template-btn:hover {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .template-btn.active {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .editor-toolbar {
+      display: flex;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      background-color: var(--surface-light);
+      border-radius: var(--radius-md);
+      flex-wrap: wrap;
+    }
+
+    .editor-toolbar button {
+      padding: var(--spacing-sm) var(--spacing-md);
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 0.875rem;
+    }
+
+    .editor-toolbar button:hover {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .bot-status {
+      padding: var(--spacing-md);
+      background-color: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success);
+      border-radius: var(--radius-md);
+      color: var(--success);
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .bot-status.offline {
+      background-color: rgba(239, 68, 68, 0.1);
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .bot-status.running {
+      background-color: rgba(16, 185, 129, 0.1);
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .bot-logs {
+      background-color: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #00ff00;
+      max-height: 200px;
+      overflow-y: auto;
+      line-height: 1.4;
+    }
+
+    .log-entry {
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .log-error {
+      color: var(--error);
+    }
+
+    .log-warning {
+      color: var(--warning);
+    }
+
+    .log-success {
+      color: var(--success);
+    }
+
+    .new-bot-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .modal-content {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-2xl);
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-lg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      padding: var(--spacing-md);
+      background-color: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-lg);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-footer button {
+      flex: 1;
+    }
+
+    .bot-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .bot-item {
+      padding: var(--spacing-md);
+      background-color: var(--surface-light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+
+    .bot-item:hover {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .bot-item.active {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .bot-item-name {
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .bot-item-status {
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    @media (max-width: 1200px) {
+      .bot-builder-container {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .bot-sidebar,
+      .bot-editor,
+      .bot-preview {
+        min-height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <div class="navbar-brand">
+          <img src="../assets/t9-logo.png" alt="T9 Logo">
+          <span>Bot Builder</span>
+        </div>
+        
+        <div class="navbar-actions">
+          <button class="btn btn-primary btn-sm" id="new-bot-btn">+ New Bot</button>
+          <button class="btn btn-secondary btn-sm" id="back-btn">العودة</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== BOT BUILDER ===== -->
+  <div class="bot-builder-container">
+    <!-- LEFT SIDEBAR - Bot List -->
+    <div class="bot-sidebar">
+      <h3>بوتاتي</h3>
+      <div class="bot-list" id="bot-list">
+        <!-- يتم ملؤها بواسطة JavaScript -->
+      </div>
+    </div>
+
+    <!-- CENTER - Code Editor -->
+    <div class="bot-editor">
+      <div class="editor-toolbar">
+        <button onclick="botBuilder.runBot()">▶️ Run Bot</button>
+        <button onclick="botBuilder.stopBot()">⏹️ Stop Bot</button>
+        <button onclick="botBuilder.saveBot()">💾 Save</button>
+        <button onclick="botBuilder.deleteBot()">🗑️ Delete</button>
+        <button onclick="botBuilder.copyCode()">📋 Copy</button>
+        <button onclick="botBuilder.clearLogs()">🧹 Clear Logs</button>
+      </div>
+
+      <div style="flex: 1; display: flex; flex-direction: column; gap: var(--spacing-md);">
+        <textarea 
+          id="code-editor" 
+          class="code-editor" 
+          placeholder="// ضع كود البوت هنا&#10;// Paste your Discord bot code here&#10;&#10;const Discord = require('discord.js');&#10;const client = new Discord.Client();&#10;&#10;client.on('ready', () => {&#10;  console.log('Bot is online!');&#10;});&#10;&#10;client.on('message', msg => {&#10;  if (msg.content === '!ping') {&#10;    msg.reply('Pong!');&#10;  }&#10;});&#10;&#10;client.login(process.env.TOKEN);"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR - Status & Logs -->
+    <div class="bot-preview">
+      <h3>حالة البوت</h3>
+      
+      <div class="bot-status offline" id="bot-status">
+        🔴 Offline
+      </div>
+
+      <div>
+        <h4 style="margin-bottom: var(--spacing-md);">معلومات البوت</h4>
+        <div style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.8;">
+          <div><strong>الاسم:</strong> <span id="bot-name">لم يتم اختيار بوت</span></div>
+          <div><strong>الرمز:</strong> <span id="bot-token" style="word-break: break-all;">-</span></div>
+          <div><strong>الحالة:</strong> <span id="bot-uptime">0 ساعة</span></div>
+          <div><strong>الأوامر:</strong> <span id="bot-commands">0</span></div>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="margin-bottom: var(--spacing-md);">السجلات</h4>
+        <div class="bot-logs" id="bot-logs">
+          <div class="log-entry log-success">[INFO] Bot Builder جاهز...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NEW BOT MODAL ===== -->
+  <div class="new-bot-modal hidden" id="new-bot-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>إنشاء بوت جديد</h2>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="bot-name-input">اسم البوت</label>
+          <input type="text" id="bot-name-input" placeholder="مثال: My Awesome Bot">
+        </div>
+
+        <div class="form-group">
+          <label for="bot-token-input">Discord Bot Token</label>
+          <input type="password" id="bot-token-input" placeholder="أدخل رمز البوت من Discord Developer Portal">
+        </div>
+
+        <div class="form-group">
+          <label for="bot-template-select">اختر نموذج</label>
+          <select id="bot-template-select">
+            <option value="empty">بوت فارغ</option>
+            <option value="welcome">بوت الترحيب</option>
+            <option value="moderation">بوت الإدارة</option>
+            <option value="music">بوت الموسيقى</option>
+            <option value="economy">بوت الاقتصاد</option>
+            <option value="fun">بوت الألعاب</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="bot-prefix-input">البادئة (Prefix)</label>
+          <input type="text" id="bot-prefix-input" placeholder="!" value="!">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="botBuilder.closeNewBotModal()">إلغاء</button>
+        <button class="btn btn-primary" onclick="botBuilder.createBot()">إنشاء البوت</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/encryption.js"></script>
+  <script src="../js/bot-builder.js"></script>
+</body>
+</html>
+
